@@ -1,4 +1,4 @@
-module enable-dependabot
+module github.com/RiRa12621/enable-dependabot
 
 go 1.17
 
