@@ -12,9 +12,6 @@ import (
 )
 
 func main() {
-	// Set log to json format for easier parsing
-	log.SetFormatter(&log.JSONFormatter{})
-
 	// Set the CLI flags
 	allPtr := flag.Bool("all", true, "Should all personal repos be enabled?")
 	orgPtr := flag.String("org", "", "Org to enabled for if 'all' is not set")
