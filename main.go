@@ -19,8 +19,13 @@ func main() {
 		"GitHub token to use to authenticate")
 	enablePtr := flag.Bool("enable", true,
 		"enable or disable dependabot alerts")
+	debugPtr := flag.Bool("debug", false, "Debug")
 	flag.Parse()
 
+	// Switch on debug logging
+	if *debugPtr {
+		log.SetLevel(log.DebugLevel)
+	}
 	// Fail without a GitHub token
 	if *tokenPtr == "" {
 		log.Fatal("GitHub Token is required")
@@ -31,7 +36,7 @@ func main() {
 		if *orgPtr == "" {
 			log.Fatal("Org is required if 'all' is disabled")
 		}
-		log.Info("Scanning", *orgPtr)
+		log.Info("Using ", *orgPtr)
 	}
 
 	// Build a GitHub client
@@ -64,11 +69,14 @@ func main() {
 			if err != nil {
 				log.Fatal(err)
 			}
+			log.Debug("Got more Repos")
 			allRepos = append(allRepos, repos...)
+			log.Debug("So far received Repositories:", len(allRepos))
 			if resp.NextPage == 0 {
 				break
 			}
 			optRepos.Page = resp.NextPage
+			log.Debug("Starting next page")
 		}
 		log.Debug("Received Repositories:", len(allRepos))
 	}
@@ -77,16 +85,26 @@ func main() {
 	if *allPtr == true {
 		// list all repositories for the authenticated user
 		log.Info("Getting Repositories")
+		currentUser, resp, err := client.Users.Get(ctx, "")
+		log.Debug(resp.StatusCode)
+		if err != nil {
+			log.Fatal(err)
+		}
+		log.Debug("User is:", github.User.GetLogin(&currentUser))
 		for {
-			repos, resp, err := client.Repositories.List(ctx, "", optUserRepos)
+			repos, resp, err := client.Repositories.List(ctx,
+				github.User.String(github.User{}), optUserRepos)
 			if err != nil {
 				log.Fatal(err)
 			}
+			log.Debug("Got more Repos")
 			allRepos = append(allRepos, repos...)
+			log.Debug("So far received Repositories:", len(allRepos))
 			if resp.NextPage == 0 {
 				break
 			}
 			optRepos.Page = resp.NextPage
+			log.Debug("Starting next page")
 		}
 		log.Debug("Received Repositories:", len(allRepos))
 	}
